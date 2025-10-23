@@ -131,7 +131,7 @@
         </select>
       </div>
       <div class="d-flex align-items-end gap-2">
-        <button class="btn btn-apply px-3">Apply </button>
+        <button class="btn btn-apply px-3">Apply</button>
         <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-reset">Reset</a>
       </div>
     </form>
