@@ -14,9 +14,7 @@
     --border:#2a234a;
   }
 
-  body{
-    background: radial-gradient(1200px 600px at 20% -10%, #201a3a 0%, var(--bg) 55%), var(--bg);
-  }
+  body{ background: radial-gradient(1200px 600px at 20% -10%, #201a3a 0%, var(--bg) 55%), var(--bg); }
   .dash{ color:var(--text); }
 
   .panel{
@@ -28,24 +26,25 @@
     content:""; position:absolute; inset:0; border-radius:18px; padding:1px;
     background:linear-gradient(135deg,transparent 30%,var(--stroke),transparent 70%);
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor; mask-composite: exclude;
-    z-index:0;
+    -webkit-mask-composite: xor; mask-composite: exclude; z-index:0;
   }
   .panel *{ position:relative; z-index:1; }
 
   .panel h6{ font-weight:700; letter-spacing:.2px; margin-bottom:6px; }
   .muted{ color:var(--muted); font-size:12px; }
   .grid{ display:grid; gap:16px; }
-  @media(min-width:992px){
-    .grid-4{ grid-template-columns: repeat(4, 1fr); }
-  }
+  @media(min-width:992px){ .grid-4{ grid-template-columns: repeat(4, 1fr); } }
 
   .filter .form-select, .filter .form-control{
     background:#120f22; border:1px solid var(--border); color:var(--text);
   }
   .filter label{ font-size:12px; color:var(--muted); }
-  .btn-apply{ background:linear-gradient(90deg,var(--stroke),var(--accent)); border:0; color:#fff; }
-  .btn-reset{ border-color:#3b2c67; color:#cbd5e1; }
+
+  /* Apply dihapus; gaya gradient dipindahkan ke .btn-reset */
+  .btn-reset{
+    background:linear-gradient(90deg,var(--stroke),var(--accent));
+    border:0; color:#fff;
+  }
 
   .h180{ height:180px; } .h220{ height:220px; } .h280{ height:280px; }
 
@@ -55,15 +54,9 @@
   .c3{left:8px;bottom:8px;border-right:none;border-top:none}
   .c4{right:8px;bottom:8px;border-left:none;border-top:none}
 
-  /* angka di tengah donut */
   .donut-center{
-    position:absolute;
-    top:50%; left:50%;
-    transform:translate(-50%,-50%);
-    font-size:22px;
-    font-weight:700;
-    text-align:center;
-    color:var(--accent);
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-size:22px; font-weight:700; text-align:center; color:var(--accent);
   }
 </style>
 
@@ -71,10 +64,12 @@
   {{-- FILTERS --}}
   <div class="panel filter mb-3">
     <div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
-    <form method="get" class="grid grid-4">
+
+    {{-- onChange auto-submit --}}
+    <form method="get" class="grid grid-4" id="filterForm">
       <div>
         <label>Year</label>
-        <select name="year" class="form-select">
+        <select name="year" class="form-select auto-submit">
           @foreach(($years ?? collect([date('Y')])) as $y)
             <option value="{{ $y }}" {{ (int)$y === (int)($year ?? date('Y')) ? 'selected':'' }}>
               {{ $y }}
@@ -84,7 +79,7 @@
       </div>
       <div>
         <label>Month</label>
-        <select name="month" class="form-select">
+        <select name="month" class="form-select auto-submit">
           <option value="">All</option>
           @for($m=1;$m<=12;$m++)
             <option value="{{ $m }}" {{ (int)($month ?? 0) === $m ? 'selected':'' }}>
@@ -95,7 +90,7 @@
       </div>
       <div>
         <label>Day</label>
-        <select name="day" class="form-select">
+        <select name="day" class="form-select auto-submit">
           <option value="">All</option>
           @for($d=1;$d<=31;$d++)
             <option value="{{ $d }}" {{ (int)($day ?? 0) === $d ? 'selected':'' }}>{{ $d }}</option>
@@ -105,7 +100,7 @@
       <div></div>
       <div>
         <label>Material</label>
-        <select name="material" class="form-select">
+        <select name="material" class="form-select auto-submit">
           <option value="">All</option>
           @foreach(($materials ?? collect()) as $m)
             <option value="{{ $m }}" {{ ($material ?? '') === $m ? 'selected':'' }}>{{ $m }}</option>
@@ -114,7 +109,7 @@
       </div>
       <div>
         <label>Unit</label>
-        <select name="unit" class="form-select">
+        <select name="unit" class="form-select auto-submit">
           <option value="">All</option>
           @foreach(($units ?? collect()) as $u)
             <option value="{{ $u }}" {{ ($unit ?? '') === $u ? 'selected':'' }}>{{ $u }}</option>
@@ -123,16 +118,17 @@
       </div>
       <div>
         <label>SO Type</label>
-        <select name="so_type" class="form-select">
+        <select name="so_type" class="form-select auto-submit">
           <option value="">All</option>
           @foreach(($soTypes ?? collect()) as $s)
             <option value="{{ $s }}" {{ ($soType ?? '') === $s ? 'selected':'' }}>{{ $s }}</option>
           @endforeach
         </select>
       </div>
-      <div class="d-flex align-items-end gap-2">
-        <button class="btn btn-apply px-3">Apply</button>
-        <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary btn-reset">Reset</a>
+
+      {{-- Apply dihapus; sisa tombol Reset saja dan pakai gradient --}}
+      <div class="d-flex align-items-end">
+        <a href="{{ route('dashboard') }}" class="btn btn-reset px-3">Reset</a>
       </div>
     </form>
   </div>
@@ -183,6 +179,16 @@
   Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--text').trim();
   Chart.defaults.font.family = `'Inter', 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif`;
 
+  // Auto-submit: submit form saat salah satu filter berubah
+  (function(){
+    const form = document.getElementById('filterForm');
+    if(!form) return;
+    // delegasi: semua element dengan class .auto-submit
+    form.querySelectorAll('.auto-submit').forEach(el=>{
+      el.addEventListener('change', ()=> form.submit(), {passive:true});
+    });
+  })();
+
   // YTD
   (function(){
     const el = $id('ytdDonut'); if(!el) return;
@@ -205,7 +211,7 @@
     });
   })();
 
-  // Top 10
+  // Top 10 (horizontal bar)
   (function(){
     const el = $id('top10Bar'); if(!el) return;
     let labels = {!! json_encode(($top10 ?? collect())->pluck('company_name')->values()) !!};
@@ -221,7 +227,7 @@
     });
   })();
 
-  // LSD
+  // LSD Bar
   (function(){
     const el = $id('lsdBar'); if(!el) return;
     const labels = {!! json_encode($lsdLabels ?? []) !!};
